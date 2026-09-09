@@ -10,7 +10,7 @@ export type Overview={
 };
 export type Tx={id:number;kind:string;amount:number;currency:string;category:string;description:string;occurred_at:string;source:string};
 export type AccountInfo={id:number;email:string|null;first_name:string|null;default_currency:string;timezone:string;subscription_status:string;subscription_plan:string;billing_enabled:boolean;trial_ends_at:string|null;current_period_ends_at:string|null;access_until:string|null};
-export type Integration={provider:string;status:string;connected_email:string|null};
+export type Integration={provider:string;status:string;connected_email:string|null;connected_at?:string|null;last_synced_at?:string|null;last_error?:string|null};
 type UserRow=AccountInfo;
 
 async function currentUserRow():Promise<UserRow>{
@@ -85,5 +85,8 @@ export async function deleteTransaction(id:number){const user=await currentUserR
 export async function listCommitments(){const user=await currentUserRow();const{data,error}=await supabase.from('commitments').select('id,title,starts_at,raw_text').eq('user_id',user.id).gte('starts_at',new Date().toISOString()).order('starts_at').limit(100);if(error)throw error;return data||[];}
 export async function listRecurring(){const user=await currentUserRow();const{data,error}=await supabase.from('recurring_expenses').select('id,description,amount,currency,category,day_of_month,active').eq('user_id',user.id).order('day_of_month');if(error)throw error;return (data||[]).map((r:any)=>({...r,amount:r.amount===null?null:Number(r.amount)}));}
 export async function setVariableRecurringAmount(id:number,value:number){const{data,error}=await supabase.rpc('set_variable_recurring_amount',{p_recurring_id:id,p_amount:value});if(error)throw error;return data;}
-export async function loadIntegration(provider='google_calendar'):Promise<Integration>{const user=await currentUserRow();const{data,error}=await supabase.from('user_integrations').select('provider,status,connected_email').eq('user_id',user.id).eq('provider',provider).maybeSingle();if(error)throw error;return data||{provider,status:'disconnected',connected_email:null};}
+export async function loadIntegration(provider='google_calendar'):Promise<Integration>{const user=await currentUserRow();const{data,error}=await supabase.from('user_integrations').select('provider,status,connected_email,connected_at,last_synced_at,last_error').eq('user_id',user.id).eq('provider',provider).maybeSingle();if(error)throw error;return data||{provider,status:'disconnected',connected_email:null,connected_at:null,last_synced_at:null,last_error:null};}
+export async function connectGoogleCalendar(){const{data,error}=await supabase.functions.invoke('google-calendar-oauth',{body:{action:'start'}});if(error)throw error;if(!data?.url)throw new Error(data?.error||'Não consegui iniciar a conexão com o Google.');window.location.assign(data.url);}
+export async function disconnectGoogleCalendar(){const{error}=await supabase.functions.invoke('google-calendar-oauth',{body:{action:'disconnect'}});if(error)throw error;}
+export async function syncGoogleCalendar(){const{data,error}=await supabase.functions.invoke('google-calendar-sync',{body:{sync_all:true}});if(error)throw error;return data;}
 export async function updateAccount(changes:Partial<Pick<AccountInfo,'first_name'|'default_currency'|'timezone'>>){const user=await currentUserRow();const{error}=await supabase.from('users').update(changes).eq('id',user.id);if(error)throw error;}
