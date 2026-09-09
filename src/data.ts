@@ -9,12 +9,25 @@ export type Overview={
   commitments:Array<{id:number;title:string;starts_at:string}>;
 };
 export type Tx={id:number;kind:string;amount:number;currency:string;category:string;description:string;occurred_at:string;source:string};
-type UserRow={id:number;default_currency:string;timezone:string};
+export type AccountInfo={id:number;email:string|null;first_name:string|null;default_currency:string;timezone:string;subscription_status:string;subscription_plan:string;billing_enabled:boolean;trial_ends_at:string|null;current_period_ends_at:string|null;access_until:string|null};
+type UserRow=AccountInfo;
 
 async function currentUserRow():Promise<UserRow>{
-  const {data,error}=await supabase.from('users').select('id,default_currency,timezone').single();
+  const {data,error}=await supabase.from('users').select('id,email,first_name,default_currency,timezone,subscription_status,subscription_plan,billing_enabled,trial_ends_at,current_period_ends_at,access_until').single();
   if(error) throw error;
   return data as UserRow;
+}
+
+
+export async function loadAccount():Promise<AccountInfo>{
+  return currentUserRow();
+}
+
+export function accountHasAccess(account:AccountInfo|null){
+  if(!account) return false;
+  if(!account.billing_enabled) return true;
+  if(account.subscription_status==='active'||account.subscription_status==='trial') return true;
+  return !!account.access_until && new Date(account.access_until).getTime()>Date.now();
 }
 
 function monthWindow(now:Date){
