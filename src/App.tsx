@@ -10,6 +10,14 @@ function money(value:number,currency:string){return new Intl.NumberFormat('pt-BR
 function localDate(v:string){return new Date(v).toLocaleDateString('pt-BR')}
 function dateInput(v:string){const d=new Date(v);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 
+function csvCell(value:string|number){const s=String(value??'');return `"${s.replace(/"/g,'""')}"`}
+function exportTransactionsCsv(items:Tx[],kind:'receita'|'gasto'){
+  const rows=[['Data','Descrição','Categoria','Moeda','Valor','Origem'],...items.map(t=>[localDate(t.occurred_at),t.description,t.category,t.currency,t.amount,t.source||''])];
+  const csv='\uFEFF'+rows.map(r=>r.map(csvCell).join(';')).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');
+  a.href=url;a.download=`planeja-mais-${kind==='receita'?'receitas':'despesas'}-${new Date().toISOString().slice(0,10)}.csv`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+}
+
 function Auth(){
   const[email,setEmail]=useState('');const[password,setPassword]=useState('');const[mode,setMode]=useState<'login'|'signup'|'forgot'>('login');const[msg,setMsg]=useState('');const[busy,setBusy]=useState(false);
   async function submit(e:FormEvent){e.preventDefault();setBusy(true);setMsg('');if(mode==='forgot'){const{error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin});setBusy(false);setMsg(error?error.message:'Se esse e-mail estiver cadastrado, você receberá um link para criar uma nova senha. 🍃');return;}const result=mode==='login'?await supabase.auth.signInWithPassword({email,password}):await supabase.auth.signUp({email,password});setBusy(false);if(result.error)setMsg(result.error.message);else if(mode==='signup'&&!result.data.session)setMsg('Conta criada. Confira seu e-mail para confirmar o acesso.');}
@@ -33,7 +41,7 @@ function Sidebar({page,setPage,open,setOpen,account}:{page:Page,setPage:(p:Page)
 
 function TransactionsPage({kind,txs,currency,onEdit}:{kind:'receita'|'gasto',txs:Tx[],currency:string,onEdit:(t:Tx)=>void}){
   const list=txs.filter(t=>t.kind===kind);const total=list.filter(t=>t.currency===currency).reduce((s,t)=>s+t.amount,0);
-  return <><div className="page-title"><div><p className="eyebrow">{kind==='receita'?'RECEITAS':'DESPESAS'}</p><h1>{kind==='receita'?'Todas as receitas':'Todas as despesas'}</h1><p>{list.length} movimentações registradas</p></div><div className={`page-total ${kind}`}><small>Total em {currency}</small><b>{money(total,currency)}</b></div></div><section className="panel transactions"><div className="table-wrap"><table><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Moeda</th><th>Valor</th><th></th></tr></thead><tbody>{list.map(tx=><tr key={tx.id}><td>{localDate(tx.occurred_at)}</td><td><strong>{tx.description}</strong></td><td>{tx.category}</td><td>{tx.currency}</td><td>{money(tx.amount,tx.currency)}</td><td><button className="mini" onClick={()=>onEdit(tx)}>Alterar</button></td></tr>)}</tbody></table></div>{!list.length&&<p className="empty">Nenhuma movimentação aqui ainda.</p>}</section></>
+  return <><div className="page-title"><div><p className="eyebrow">{kind==='receita'?'RECEITAS':'DESPESAS'}</p><h1>{kind==='receita'?'Todas as receitas':'Todas as despesas'}</h1><p>{list.length} movimentações registradas</p></div><div className="page-title-actions"><button className="export-btn" disabled={!list.length} onClick={()=>exportTransactionsCsv(list,kind)}>Exportar CSV</button><div className={`page-total ${kind}`}><small>Total em {currency}</small><b>{money(total,currency)}</b></div></div></div><section className="panel transactions"><div className="table-wrap"><table><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Moeda</th><th>Valor</th><th></th></tr></thead><tbody>{list.map(tx=><tr key={tx.id}><td>{localDate(tx.occurred_at)}</td><td><strong>{tx.description}</strong></td><td>{tx.category}</td><td>{tx.currency}</td><td>{money(tx.amount,tx.currency)}</td><td><button className="mini" onClick={()=>onEdit(tx)}>Alterar</button></td></tr>)}</tbody></table></div>{!list.length&&<p className="empty">Nenhuma movimentação aqui ainda.</p>}</section></>
 }
 
 function CategoriesPage({overview,currency,categories,newCat,setNewCat,onAdd}:{overview:Overview|null,currency:string,categories:any[],newCat:string,setNewCat:(s:string)=>void,onAdd:(e:FormEvent)=>void}){
