@@ -9,12 +9,13 @@ export type Overview={
   commitments:Array<{id:number;title:string;starts_at:string}>;
 };
 export type Tx={id:number;kind:string;amount:number;currency:string;category:string;description:string;occurred_at:string;source:string};
-export type AccountInfo={id:number;email:string|null;first_name:string|null;default_currency:string;timezone:string;subscription_status:string;subscription_plan:string;billing_enabled:boolean;trial_ends_at:string|null;current_period_ends_at:string|null;access_until:string|null};
+export type AccountInfo={id:number;email:string|null;first_name:string|null;default_currency:string;timezone:string;subscription_status:string;subscription_plan:string;billing_enabled:boolean;billing_customer_id:string|null;billing_subscription_id:string|null;trial_ends_at:string|null;current_period_ends_at:string|null;access_until:string|null;beta_access:boolean;beta_access_granted_at:string|null};
+export type PlanInfo={code:string;name:string;description:string;amount_minor:number|null;currency:string;interval:string;active:boolean;visible:boolean;sort_order:number;features:string[]};
 export type Integration={provider:string;status:string;connected_email:string|null;connected_at?:string|null;last_synced_at?:string|null;last_error?:string|null};
 type UserRow=AccountInfo;
 
 async function currentUserRow():Promise<UserRow>{
-  const {data,error}=await supabase.from('users').select('id,email,first_name,default_currency,timezone,subscription_status,subscription_plan,billing_enabled,trial_ends_at,current_period_ends_at,access_until').single();
+  const {data,error}=await supabase.from('users').select('id,email,first_name,default_currency,timezone,subscription_status,subscription_plan,billing_enabled,billing_customer_id,billing_subscription_id,trial_ends_at,current_period_ends_at,access_until,beta_access,beta_access_granted_at').single();
   if(error) throw error;
   return data as UserRow;
 }
@@ -22,10 +23,19 @@ async function currentUserRow():Promise<UserRow>{
 export async function loadAccount(){return currentUserRow();}
 export function accountHasAccess(account:AccountInfo|null){
   if(!account)return false;
-  if(!account.billing_enabled)return true;
-  if(['active','trial'].includes(account.subscription_status))return true;
+  if(account.beta_access)return true;
+  if(['active','trial','trialing'].includes(account.subscription_status))return true;
   return !!account.access_until&&new Date(account.access_until).getTime()>Date.now();
-}function monthWindow(now:Date){
+}
+
+export async function loadPlans():Promise<PlanInfo[]>{
+  const{data,error}=await supabase.from('billing_plans').select('code,name,description,amount_minor,currency,interval,active,visible,sort_order,features').eq('visible',true).order('sort_order');
+  if(error)throw error;return (data||[]) as PlanInfo[];
+}
+export async function redeemBetaInvite(token:string){const{data,error}=await supabase.rpc('redeem_beta_invite',{p_token:token.trim()});if(error)throw error;return data;}
+export async function startSubscriptionCheckout(plan='standard'){const{data,error}=await supabase.functions.invoke('stripe-checkout',{body:{plan}});if(error)throw error;if(!data?.url)throw new Error(data?.error||'Checkout indisponível.');window.location.assign(data.url);}
+export async function openBillingPortal(){const{data,error}=await supabase.functions.invoke('stripe-portal',{body:{}});if(error)throw error;if(!data?.url)throw new Error(data?.error||'Portal de cobrança indisponível.');window.location.assign(data.url);}
+function monthWindow(now:Date){
   const year=now.getFullYear(),month=now.getMonth();
   return {year,month:month+1,start:new Date(year,month,1),end:new Date(year,month+1,1),days:new Date(year,month+1,0).getDate()};
 }
