@@ -69,8 +69,8 @@ export async function loadOverview():Promise<Overview>{
   for(const cur of currencies){
     summary[cur]??={receita:0,gasto:0,saldo:0};summary[cur].saldo=summary[cur].receita-summary[cur].gasto;
     categories[cur]=(categories[cur]||[]).sort((a,b)=>b.amount-a.amount);
-    let receita=0,gasto=0;
-    series[cur]=Array.from({length:w.days},(_,i)=>{const day=i+1,v=daily[cur]?.[day]||{receita:0,gasto:0};receita+=v.receita;gasto+=v.gasto;return{day,receita,gasto,saldo:receita-gasto};});
+    let receitaAcumulada=0,gastoAcumulado=0;
+    series[cur]=Array.from({length:w.days},(_,i)=>{const day=i+1,v=daily[cur]?.[day]||{receita:0,gasto:0};receitaAcumulada+=v.receita;gastoAcumulado+=v.gasto;return{day,receita:v.receita,gasto:v.gasto,saldo:receitaAcumulada-gastoAcumulado};});
   }
   return {year:w.year,month:w.month,default_currency:user.default_currency,summary,series,categories,
     upcoming_recurring:(recRes.data||[]).map((r:any)=>{const o=(occRes.data||[]).find((x:any)=>x.recurring_expense_id===r.id);return {...r,amount:r.amount===null?null:Number(r.amount),confirmed_amount:o?.amount==null?null:Number(o.amount)};}),
