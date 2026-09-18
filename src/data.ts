@@ -22,6 +22,8 @@ async function currentUserRow():Promise<UserRow>{
 }
 
 export async function loadAccount(){return currentUserRow();}
+export async function loadMonthlySpendingLimit(currency:string){const user=await currentUserRow();const now=new Date();const{data,error}=await supabase.from('monthly_spending_limits').select('amount').eq('user_id',user.id).eq('year',now.getFullYear()).eq('month',now.getMonth()+1).eq('currency',currency).maybeSingle();if(error)throw error;return data?.amount==null?null:Number(data.amount);}
+export async function saveMonthlySpendingLimit(currency:string,amount:number){const user=await currentUserRow();const now=new Date();const{error}=await supabase.from('monthly_spending_limits').upsert({user_id:user.id,year:now.getFullYear(),month:now.getMonth()+1,currency,amount},{onConflict:'user_id,year,month,currency'});if(error)throw error;}
 export async function listHouseholdMembers(){const{data,error}=await supabase.rpc('my_household_members');if(error)throw error;return data||[];}
 export async function createHouseholdInvite(name:string,email:string){const{data,error}=await supabase.rpc('create_household_invite',{p_name:name.trim(),p_email:email.trim().toLowerCase()});if(error)throw error;return data as {token:string;expires_in_days:number};}
 export async function telegramBotUsername(){const{data,error}=await supabase.rpc('get_planeja_telegram_bot_username');if(error)throw error;return String(data||'');}
