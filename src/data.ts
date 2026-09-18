@@ -3,6 +3,7 @@ import { supabase } from './lib';
 export type Overview={
   year:number;month:number;default_currency:string;
   summary:Record<string,{receita:number;gasto:number;saldo:number}>;
+  consolidated?:Record<string,{receita:number;gasto:number;saldo:number}>;
   series:Record<string,Array<{day:number;receita:number;gasto:number;saldo:number}>>;
   categories:Record<string,Array<{name:string;amount:number}>>;
   upcoming_recurring:Array<{id:number;description:string;amount:number|null;confirmed_amount:number|null;currency:string;category:string;day_of_month:number|null}>;
@@ -80,7 +81,9 @@ export async function loadOverview():Promise<Overview>{
     let receitaAcumulada=0,gastoAcumulado=0;
     series[cur]=Array.from({length:w.days},(_,i)=>{const day=i+1,v=daily[cur]?.[day]||{receita:0,gasto:0};receitaAcumulada+=v.receita;gastoAcumulado+=v.gasto;return{day,receita:v.receita,gasto:v.gasto,saldo:receitaAcumulada-gastoAcumulado};});
   }
-  return {year:w.year,month:w.month,default_currency:user.default_currency,summary,series,categories,
+  const consolidated:Overview['summary']={};
+  for(const target of ['JPY','BRL','USD','EUR']){let receita=0,gasto=0,complete=true;for(const tx of txs){let converted=Number(tx.amount);if(tx.currency!==target){const{data,error}=await supabase.rpc('fx_convert',{p_amount:Number(tx.amount),p_from:tx.currency,p_to:target,p_date:new Date(tx.occurred_at).toISOString().slice(0,10)});if(error||data==null){complete=false;break}converted=Number(data)}if(tx.kind==='receita')receita+=converted;else gasto+=converted}if(complete)consolidated[target]={receita,gasto,saldo:receita-gasto};}
+  return {year:w.year,month:w.month,default_currency:user.default_currency,summary,consolidated,series,categories,
     upcoming_recurring:(recRes.data||[]).map((r:any)=>{const o=(occRes.data||[]).find((x:any)=>x.recurring_expense_id===r.id);return {...r,amount:r.amount===null?null:Number(r.amount),confirmed_amount:o?.amount==null?null:Number(o.amount)};}),
     commitments:(comRes.data||[]) as Overview['commitments']};
 }
