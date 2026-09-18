@@ -88,3 +88,12 @@ body{background:radial-gradient(circle at 12% 0%,rgba(91,174,116,.08),transparen
 .utility-sidebar nav button.active{background:var(--active-bg)!important;color:var(--active-text)!important}.utility-sidebar nav button:hover{background:color-mix(in srgb,var(--active-bg) 72%,transparent)!important;color:var(--active-text)!important}
 .recharts-cartesian-grid line{stroke:var(--line)!important}.recharts-text{fill:var(--muted)!important}.recharts-legend-item-text{color:var(--muted)!important}.recharts-default-tooltip{background:var(--panel)!important;border:1px solid var(--line)!important;border-radius:10px!important;color:var(--text)!important}.recharts-tooltip-label{color:var(--text)!important}
 @media(max-width:720px){.main-topnav{display:flex!important;gap:6px!important}.main-topnav nav{margin-left:auto!important;overflow-x:auto;justify-content:flex-start}.top-logo{margin-left:0!important}.main-topnav nav>button,.launch-wrap>button{white-space:nowrap!important;padding:8px 9px!important}}
+
+/* Sidebar lives on a dark brand surface in every theme: use surface-specific contrast. */
+.utility-sidebar nav button{color:#cfe0d3!important}
+.utility-sidebar nav button span{color:#a9cbb3!important}
+.utility-sidebar nav button.active{background:rgba(137,211,158,.17)!important;color:#ffffff!important;box-shadow:inset 3px 0 0 #9ee2b1!important}
+.utility-sidebar nav button.active span{background:rgba(158,226,177,.15)!important;border-color:rgba(158,226,177,.28)!important;color:#e5f8ea!important}
+.utility-sidebar nav button:hover{background:rgba(255,255,255,.075)!important;color:#ffffff!important}
+.utility-sidebar nav button:hover span{color:#e5f8ea!important}
+.utility-sidebar .side-brand b{color:#ffffff!important}.utility-sidebar .side-brand small{color:#a9c2af!important}.utility-sidebar .side-close{color:#ffffff!important}
