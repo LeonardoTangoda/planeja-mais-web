@@ -30,3 +30,11 @@
 @media(max-width:720px){.landing-card{width:calc(100% - 32px)}.channel-choice,.chat-buttons{grid-template-columns:1fr}.activation-shell{padding:14px}.activation-card{padding:24px 18px;border-radius:20px}.activation-card h1{font-size:1.75rem}.activation-steps span{padding:9px 7px;font-size:.85rem}.activation-account{display:grid}}
 
 .range-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.range-controls select,.range-controls input{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:9px;padding:8px 10px}.range-controls span{color:var(--muted);font-size:.82rem}@media(max-width:720px){.panel-head{align-items:flex-start;flex-direction:column}.range-controls{width:100%}.range-controls select,.range-controls input{max-width:100%}}
+
+/* UX polish — visual hierarchy only, no product behavior changes */
+.content{width:calc(100% - 270px);max-width:none}.topbar{position:sticky;top:0;z-index:15;padding:12px 0;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(12px)}
+.sidebar{border-right:1px solid rgba(255,255,255,.08)}.side-brand{min-height:72px}.side-brand b{font-size:1.08rem;letter-spacing:-.02em}.sidebar nav{gap:3px}.sidebar nav button{min-height:44px}.sidebar nav button.active{box-shadow:inset 3px 0 0 #9bc5a6}
+.page-title.home-title{margin-top:10px}.cards{gap:14px}.metric-card,.cards article,.panel{box-shadow:0 4px 18px rgba(34,60,42,.045)}.metric-card:focus-visible,.sidebar button:focus-visible,.text-btn:focus-visible,.refresh-btn:focus-visible{outline:3px solid #8eb79a;outline-offset:2px}
+.chart-panel{overflow:hidden}.panel-head h2{line-height:1.2}.range-controls select,.range-controls input{min-height:38px}.row strong,.mini-history strong{line-height:1.25}.row small,.mini-history small{line-height:1.35}
+@media(max-width:1050px){.content{width:100%}.topbar{margin-left:-4px;margin-right:-4px;padding-left:4px;padding-right:4px}}
+@media(max-width:720px){.topbar{top:0}.header-actions{display:flex;gap:6px;align-items:center}.refresh-btn{font-size:0;padding:10px}.refresh-btn::first-letter{font-size:1rem}.header-actions select{max-width:82px}.cards{gap:10px}.metric-card,.cards article{min-height:116px}.chart-panel{padding-left:12px;padding-right:12px}}
