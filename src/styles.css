@@ -125,3 +125,18 @@ body{background:radial-gradient(circle at 12% 0%,rgba(91,174,116,.08),transparen
  .top-logo{width:70px!important}.top-logo img{width:70px!important;height:44px!important}
  .main-topnav nav>button,.launch-wrap>button{font-size:.66rem!important;padding:7px 7px!important}
 }
+/* Mobile top navigation v2: two clean rows, no brand/nav collision. */
+@media(max-width:720px){
+ .main-topnav{min-height:112px!important;height:auto!important;display:grid!important;grid-template-columns:48px minmax(0,1fr)!important;grid-template-rows:52px 48px!important;align-items:center!important;gap:2px 8px!important;padding:6px 12px 7px!important;overflow:visible!important}
+ .utility-menu-btn{grid-column:1!important;grid-row:1!important;justify-self:start!important;width:42px!important;height:42px!important}
+ .top-logo{grid-column:2!important;grid-row:1!important;justify-self:start!important;width:112px!important;height:50px!important;margin:0!important;overflow:visible!important}
+ .top-logo img{width:108px!important;height:50px!important;object-fit:contain!important;object-position:left center!important}
+ .main-topnav nav{grid-column:1/-1!important;grid-row:2!important;width:100%!important;min-width:0!important;margin:0!important;padding:4px!important;display:flex!important;justify-content:flex-start!important;gap:3px!important;overflow-x:auto!important;border-radius:13px!important;scrollbar-width:none!important}
+ .main-topnav nav::-webkit-scrollbar{display:none!important}
+ .main-topnav nav>button,.launch-wrap>button{flex:0 0 auto!important;font-size:.72rem!important;padding:8px 11px!important;min-height:38px!important;white-space:nowrap!important}
+}
+@media(max-width:430px){
+ .main-topnav{grid-template-columns:46px minmax(0,1fr)!important;padding-left:10px!important;padding-right:10px!important}
+ .top-logo{width:104px!important}.top-logo img{width:100px!important}
+ .main-topnav nav>button,.launch-wrap>button{font-size:.7rem!important;padding-left:10px!important;padding-right:10px!important}
+}
