@@ -140,3 +140,12 @@ body{background:radial-gradient(circle at 12% 0%,rgba(91,174,116,.08),transparen
  .top-logo{width:104px!important}.top-logo img{width:100px!important}
  .main-topnav nav>button,.launch-wrap>button{font-size:.7rem!important;padding-left:10px!important;padding-right:10px!important}
 }
+/* Mobile header alignment: menu button left, brand right, nav centered. */
+@media(max-width:720px){
+ .top-logo{justify-self:end!important;margin-right:2px!important}
+ .top-logo img{object-position:right center!important}
+ .main-topnav nav{justify-content:center!important}
+}
+@media(max-width:430px){
+ .main-topnav nav{justify-content:center!important}
+}
