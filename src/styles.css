@@ -157,3 +157,11 @@ body{background:radial-gradient(circle at 12% 0%,rgba(91,174,116,.08),transparen
 .plan-edit{color:#f7fff9!important;background:#1f6542!important;border-color:#2d7650!important;font-weight:800!important;text-shadow:none!important;opacity:1!important}
 .plan-edit:hover,.plan-edit:focus{color:#fff!important;background:#174f34!important}
 :root[data-theme="dark"] .plan-edit{color:#f7fff9!important;background:#286f4a!important}
+
+/* Desktop header brand: compact mascot + wordmark */
+.main-topnav .top-logo{display:flex;align-items:center;gap:10px;width:auto;max-width:230px;height:58px;padding:4px 10px;border:0;background:transparent;overflow:hidden;text-align:left}
+.main-topnav .top-logo>img{width:48px;height:48px;object-fit:contain;flex:0 0 48px}
+.main-topnav .top-logo-copy{display:flex;flex-direction:column;justify-content:center;min-width:0;line-height:1}
+.main-topnav .top-logo-copy strong{font-size:1.38rem;line-height:1;font-weight:800;letter-spacing:-.04em;white-space:nowrap}
+.main-topnav .top-logo-copy small{margin-top:5px;font-size:.56rem;line-height:1;letter-spacing:.06em;white-space:nowrap;opacity:.64}
+@media(max-width:720px){.main-topnav .top-logo{max-width:58px;padding:4px 5px}.main-topnav .top-logo-copy{display:none}}
