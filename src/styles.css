@@ -165,3 +165,5 @@ body{background:radial-gradient(circle at 12% 0%,rgba(91,174,116,.08),transparen
 .main-topnav .top-logo-copy strong{font-size:1.38rem;line-height:1;font-weight:800;letter-spacing:-.04em;white-space:nowrap}
 .main-topnav .top-logo-copy small{margin-top:5px;font-size:.56rem;line-height:1;letter-spacing:.06em;white-space:nowrap;opacity:.64}
 @media(max-width:720px){.main-topnav .top-logo{max-width:58px;padding:4px 5px}.main-topnav .top-logo-copy{display:none}}
+
+.tx-pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:.86rem}.tx-pagination>div{display:flex;align-items:center;gap:10px}.tx-pagination b{color:var(--text);font-size:.82rem}.tx-pagination button:disabled{opacity:.4;cursor:not-allowed}@media(max-width:720px){.tx-pagination{align-items:stretch;flex-direction:column}.tx-pagination>div{justify-content:space-between;flex-wrap:wrap}}
