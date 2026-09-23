@@ -88,6 +88,9 @@ export async function loadOverview():Promise<Overview>{
     commitments:(comRes.data||[]) as Overview['commitments']};
 }
 
+export type GardenStatus={xp:number;health:number;mood:string;last_activity:string;events:Array<{type:string;xp:number;at:string}>};
+export async function loadGardenStatus():Promise<GardenStatus>{const{data,error}=await supabase.rpc('my_garden_status');if(error)throw error;return data as GardenStatus;}
+
 export async function listTransactions(kind?:'receita'|'gasto',limit=500):Promise<Tx[]>{
   const{data:ids,error:ie}=await supabase.rpc('my_household_user_ids');if(ie)throw ie;let q=supabase.from('transactions').select('id,kind,amount,currency,category,description,occurred_at,source').in('user_id',ids||[]).order('occurred_at',{ascending:false}).limit(limit);
   if(kind)q=q.eq('kind',kind);const {data,error}=await q;if(error)throw error;
