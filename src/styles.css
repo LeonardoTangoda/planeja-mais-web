@@ -188,3 +188,57 @@ body{background:radial-gradient(circle at 12% 0%,rgba(91,174,116,.08),transparen
 @media(max-width:900px){.tama-world{height:680px;min-height:680px}.tama-needs{width:58%;bottom:16px}.tama-status{top:94px;bottom:auto}.garden-afterworld{grid-template-columns:1fr}.tama-care-drawer{top:29%}}
 @media(max-width:620px){.tama-world{height:650px;min-height:650px;border-radius:22px}.tama-level{left:10px;top:10px;width:170px}.tama-energy{right:10px;top:10px;min-width:128px}.tama-hud{padding:9px 10px}.tama-hud strong{font-size:.84rem}.tama-hud span{font-size:.54rem}.tama-dialog{top:20%;max-width:72%;white-space:normal;text-align:center}.tama-creature{top:46%;width:170px;height:170px}.tama-creature .plant-visual{font-size:7.2rem}.tama-soil{top:57%;width:250px;height:72px}.tama-needs{left:10px;right:10px;bottom:10px;width:auto;transform:none;display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:8px}.tama-needs>div{grid-template-columns:21px 1fr 29px}.tama-status{left:10px;top:88px;padding:7px 9px}.tama-care-toggle{right:10px;top:43%;width:62px;height:60px}.tama-care-toggle.open{right:10px;top:25%;z-index:24}.tama-care-drawer{right:8px;left:8px;top:34%;width:auto;transform:translateY(20px);opacity:0}.tama-care-drawer.open{transform:translateY(0)}.tama-care-actions{grid-template-columns:1fr 1fr}.tama-save-button{right:10px;bottom:104px}.tama-save-pop{left:8px;right:8px;bottom:148px;width:auto}.garden-sun{right:10%;top:22%}.garden-cloud.one{top:27%}.garden-cloud.two{top:38%}}
 @media(max-width:390px){.tama-energy{min-width:112px}.tama-level{width:158px}.tama-hud span{display:none}.tama-care-actions{grid-template-columns:1fr}.tama-care-drawer{top:29%}.tama-dialog{top:19%}}
+
+/* Garden v3.1 — compact game screen, especially on phones */
+.tama-world{height:620px;min-height:560px;background:linear-gradient(#dff3ff 0 67%,#a9cf8b 67% 72%,#78ad61 72% 100%)}
+.tama-soil{top:62%;width:285px;height:76px;background:radial-gradient(ellipse at 50% 28%,#9a7047 0 18%,#77502f 52%,#55351f 78%)}
+.tama-soil:before{left:-12px;right:-12px;top:-8px;height:23px;background:linear-gradient(180deg,#68a755,#4b8841)}
+.grass{width:22px;height:18px;top:-18px;font-size:0;background:linear-gradient(68deg,transparent 44%,#3d7e3c 45% 55%,transparent 56%),linear-gradient(112deg,transparent 44%,#4d9147 45% 55%,transparent 56%)}
+.g1{left:10%}.g2{left:78%}.g3{left:45%;top:-20px}
+
+@media(max-width:900px){
+ .tama-world{height:560px;min-height:560px}
+ .tama-status{display:none}
+ .tama-needs{width:62%;bottom:12px}
+}
+@media(max-width:620px){
+ .tama-page{gap:10px}
+ .tama-world{height:500px;min-height:500px;border-radius:20px;background:linear-gradient(#dff3ff 0 69%,#b7d99c 69% 73%,#7fb267 73% 100%)}
+ .tama-hud{padding:7px 9px;border-radius:13px;box-shadow:0 5px 14px rgba(34,70,44,.08)}
+ .tama-level{left:8px;top:8px;width:154px}
+ .tama-energy{right:8px;top:8px;min-width:105px;width:105px;text-align:right}
+ .tama-hud small{font-size:.49rem}.tama-hud strong{font-size:.78rem}.tama-hud span{font-size:.48rem;margin-top:3px}
+ .tama-xpbar{height:5px;margin-top:5px}
+ .tama-dialog{top:18%;max-width:64%;padding:7px 10px;font-size:.7rem}
+ .tama-creature{left:43%;top:47%;width:145px;height:145px}
+ .tama-creature .plant-visual{font-size:6.3rem}
+ .plant-face{font-size:.62rem}
+ .tama-soil{left:43%;top:59%;width:215px;height:58px}
+ .tama-soil:before{left:-8px;right:-8px;top:-7px;height:20px}
+ .grass{top:-17px}.g3{top:-19px}
+ .soil-flower{font-size:1rem;top:-20px}.soil-flower.f2,.soil-flower.f4{top:-25px}
+ .tama-care-toggle{right:9px;top:42%;width:58px;height:55px;border-radius:14px}
+ .tama-care-toggle span{font-size:1.15rem}.tama-care-toggle b{font-size:.6rem}
+ .tama-care-toggle.open{right:9px;top:20%;z-index:26;width:38px;height:38px}.tama-care-toggle.open b{display:none}
+ .tama-care-drawer{left:auto;right:7px;top:29%;bottom:auto;width:190px;padding:10px;border-radius:16px;transform:translateX(18px)}
+ .tama-care-drawer.open{transform:translateX(0)}
+ .tama-drawer-head{margin-bottom:6px}.tama-drawer-head strong{font-size:.7rem}.tama-drawer-head>b{font-size:.62rem}
+ .tama-care-actions{grid-template-columns:1fr;gap:5px}
+ .tama-care-actions button{grid-template-columns:25px 1fr auto;padding:6px 7px;border-radius:10px}.tama-care-actions button>span{font-size:.95rem}.tama-care-actions button strong{font-size:.63rem}.tama-care-actions button small,.tama-care-actions button>b{font-size:.5rem}
+ .tama-drawer-note{font-size:.5rem;margin-top:5px}
+ .tama-save-button{right:9px;bottom:72px;padding:7px 9px;border-radius:12px}.tama-save-button b{font-size:.6rem}.tama-save-button span{font-size:.85rem}
+ .tama-needs{left:8px;right:8px;bottom:8px;width:auto;grid-template-columns:1fr 1fr;gap:4px 8px;padding:7px 9px;border-radius:14px}
+ .tama-needs>div{grid-template-columns:18px 1fr 27px;gap:4px}.tama-needs>div>span{font-size:.82rem}.tama-needs small{font-size:.49rem}.tama-needs>div>i{height:5px}
+ .tama-save-pop{left:7px;right:7px;bottom:65px;width:auto;padding:10px;border-radius:15px}
+ .garden-sun{right:10%;top:25%;font-size:2.1rem}.garden-cloud{font-size:2.4rem}.garden-cloud.one{left:8%;top:29%}.garden-cloud.two{right:22%;top:39%;font-size:1.8rem}
+ .tama-world .care-fx{top:29%}
+}
+@media(max-width:390px){
+ .tama-world{height:480px;min-height:480px}
+ .tama-level{width:145px}.tama-energy{width:98px;min-width:98px}
+ .tama-hud span{display:block}
+ .tama-creature{width:135px;height:135px}.tama-creature .plant-visual{font-size:5.9rem}
+ .tama-soil{width:200px;height:54px}
+ .tama-care-drawer{top:28%;width:180px}
+ .tama-dialog{top:18%}
+}
