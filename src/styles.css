@@ -248,3 +248,5 @@ body{background:radial-gradient(circle at 12% 0%,rgba(91,174,116,.08),transparen
 @media(max-width:900px){.credit-card-grid{grid-template-columns:1fr}.card-register-grid{grid-template-columns:1fr 1fr 1fr}.card-register-grid label:first-child{grid-column:span 2}}
 @media(max-width:620px){.credit-card-panel{padding:12px;border-radius:17px}.credit-card-visual{min-height:112px;padding:16px}.credit-card-visual strong{font-size:1.2rem}.card-register-grid{grid-template-columns:1fr 1fr}.card-register-grid label:first-child,.card-register-grid button{grid-column:1/-1}.card-actions{display:grid;grid-template-columns:1fr 1fr}.card-actions button:first-child{grid-column:1/-1}.card-invoice strong{font-size:1.4rem}}
 .card-expense-ledger{margin-top:16px}.card-expense-ledger .panel-head>div{display:grid;gap:3px}.card-expense-ledger .panel-head p{margin:0}.card-expense-ledger .panel-head>b{font-size:1.05rem;white-space:nowrap}
+
+.password-hint{display:block;margin-top:6px;color:var(--muted);font-size:.62rem;line-height:1.45}.turnstile-shell{min-height:1px;width:100%;overflow:hidden}.turnstile-shell:empty{display:none}
