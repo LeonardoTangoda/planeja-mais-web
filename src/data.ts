@@ -97,12 +97,13 @@ export async function listTransactions(kind?:'receita'|'gasto',limit=500):Promis
 function normalizeCategory(name:string){return name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim().replace(/\s+/g,' ');}
 export async function listCategories(){const user=await currentUserRow();const{data,error}=await supabase.from('categories').select('id,name,is_default').eq('user_id',user.id).order('name');if(error)throw error;return data||[];}
 export async function addCategory(name:string){const user=await currentUserRow();const clean=name.trim().slice(0,64);const{error}=await supabase.from('categories').upsert({user_id:user.id,name:clean,normalized_name:normalizeCategory(clean),is_default:false},{onConflict:'user_id,normalized_name'});if(error)throw error;}export async function updateTransaction(id:number,changes:Partial<Pick<Tx,'kind'|'amount'|'currency'|'category'|'description'|'occurred_at'>>){
-  const user=await currentUserRow();const patch:any={...changes};
+  const patch:any={...changes};
   if(changes.category){patch.category=changes.category.trim().slice(0,64);await addCategory(patch.category);}
   if(changes.description!==undefined)patch.description=changes.description.trim().slice(0,500);
-  const{error}=await supabase.from('transactions').update(patch).eq('id',id).eq('user_id',user.id);if(error)throw error;
+  const{data,error}=await supabase.rpc('update_household_transaction',{p_transaction_id:id,p_changes:patch});
+  if(error)throw error;if(data!==true)throw new Error('Não foi possível salvar a alteração.');
 }
-export async function deleteTransaction(id:number){const user=await currentUserRow();const{error}=await supabase.from('transactions').delete().eq('id',id).eq('user_id',user.id);if(error)throw error;}
+export async function deleteTransaction(id:number){const user=await currentUserRow();const{data,error}=await supabase.from('transactions').delete().eq('id',id).eq('user_id',user.id).select('id').maybeSingle();if(error)throw error;if(!data)throw new Error('Somente quem registrou esta movimentação pode excluí-la. Você ainda pode editar os dados financeiros compartilhados da família.');}
 export async function listCommitments(){const{data:ids,error:ie}=await supabase.rpc('my_household_user_ids');if(ie)throw ie;const{data,error}=await supabase.from('commitments').select('id,title,starts_at,raw_text').in('user_id',ids||[]).gte('starts_at',new Date().toISOString()).order('starts_at').limit(100);if(error)throw error;return data||[];}
 export async function listRecurring(){const{data:ids,error:ie}=await supabase.rpc('my_household_user_ids');if(ie)throw ie;const{data,error}=await supabase.from('recurring_expenses').select('id,description,amount,currency,category,day_of_month,active').in('user_id',ids||[]).order('day_of_month');if(error)throw error;return (data||[]).map((r:any)=>({...r,amount:r.amount===null?null:Number(r.amount)}));}
 export async function setVariableRecurringAmount(id:number,value:number){const{data,error}=await supabase.rpc('set_variable_recurring_amount',{p_recurring_id:id,p_amount:value});if(error)throw error;return data;}
