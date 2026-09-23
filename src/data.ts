@@ -88,8 +88,11 @@ export async function loadOverview():Promise<Overview>{
     commitments:(comRes.data||[]) as Overview['commitments']};
 }
 
-export type GardenStatus={xp:number;health:number;mood:string;last_activity:string;events:Array<{type:string;xp:number;at:string}>};
+export type GardenStatus={xp:number;care_points:number;health:number;mood:string;hydration:number;cleanliness:number;nutrition:number;happiness:number;flowers:number;last_activity:string;events:Array<{type:string;xp:number;at:string}>;care_actions:Array<{action:string;cost:number;at:string}>;achievements:Array<{key:string;at:string}>};
 export async function loadGardenStatus():Promise<GardenStatus>{const{data,error}=await supabase.rpc('my_garden_status');if(error)throw error;return data as GardenStatus;}
+export async function careForGarden(action:'water'|'clean'|'fertilize'|'play'){const{data,error}=await supabase.rpc('care_for_my_garden',{p_action:action});if(error){if(String(error.message).includes('not_enough_care_points'))throw new Error('Você ainda não tem energia de cuidado suficiente. Organize algo no Planeja+ para ganhar mais. ✨');throw error}return data;}
+export async function recordSavingsWin(amount:number,currency:string,note=''){const{data,error}=await supabase.rpc('record_my_savings_win',{p_amount:amount,p_currency:currency,p_note:note});if(error)throw error;return data;}
+
 
 export async function listTransactions(kind?:'receita'|'gasto',limit=500):Promise<Tx[]>{
   const{data:ids,error:ie}=await supabase.rpc('my_household_user_ids');if(ie)throw ie;let q=supabase.from('transactions').select('id,kind,amount,currency,category,description,occurred_at,source').in('user_id',ids||[]).order('occurred_at',{ascending:false}).limit(limit);
