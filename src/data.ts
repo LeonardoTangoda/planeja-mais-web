@@ -43,6 +43,8 @@ export async function startPaymentMethodSetup(){const{data,error}=await supabase
 export async function connectChatChannel(channel:'telegram'|'whatsapp'){const{data,error}=await supabase.functions.invoke('chat-connect',{body:{action:channel}});if(error)throw error;if(data?.url)window.location.assign(data.url);return data;}
 export async function startSubscriptionCheckout(plan='standard'){const{data,error}=await supabase.functions.invoke('stripe-checkout',{body:{plan}});if(error)throw error;if(!data?.url)throw new Error(data?.error||'Checkout indisponível.');window.location.assign(data.url);}
 export async function openBillingPortal(){const{data,error}=await supabase.functions.invoke('stripe-portal',{body:{}});if(error)throw error;if(!data?.url)throw new Error(data?.error||'Portal de cobrança indisponível.');window.location.assign(data.url);}
+export async function exportMyData(){const{data,error}=await supabase.functions.invoke('account-data-v1',{body:{action:'export'}});if(error)throw error;if(data?.error)throw new Error(data.error);return data;}
+export async function deleteMyAccount(confirmText:string){const{data,error}=await supabase.functions.invoke('account-data-v1',{body:{action:'delete',confirm:confirmText}});if(error)throw error;if(data?.error)throw new Error(data.error);return data;}
 function monthWindow(now:Date){
   const year=now.getFullYear(),month=now.getMonth();
   return {year,month:month+1,start:new Date(year,month,1),end:new Date(year,month+1,1),days:new Date(year,month+1,0).getDate()};
