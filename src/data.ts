@@ -22,6 +22,33 @@ async function currentUserRow():Promise<UserRow>{
   return data as UserRow;
 }
 
+let householdIdsCache:{ids:number[];expiresAt:number}|null=null;
+let householdIdsInFlight:Promise<number[]>|null=null;
+const wait=(ms:number)=>new Promise<void>(resolve=>setTimeout(resolve,ms));
+
+async function householdUserIds():Promise<number[]>{
+  const now=Date.now();
+  if(householdIdsCache&&householdIdsCache.expiresAt>now)return householdIdsCache.ids;
+  if(householdIdsInFlight)return householdIdsInFlight;
+  householdIdsInFlight=(async()=>{
+    let lastError:unknown=null;
+    for(let attempt=0;attempt<3;attempt++){
+      const{data,error}=await supabase.rpc('my_household_user_ids');
+      if(!error){
+        const ids=(data||[]) as number[];
+        householdIdsCache={ids,expiresAt:Date.now()+10_000};
+        return ids;
+      }
+      lastError=error;
+      if(attempt<2)await wait(250*(attempt+1));
+    }
+    if(lastError)throw lastError;
+    throw new Error('Não foi possível carregar os membros da família.');
+  })();
+  try{return await householdIdsInFlight}
+  finally{householdIdsInFlight=null}
+}
+
 export async function loadAccount(){return currentUserRow();}
 export async function loadMonthlySpendingLimit(currency:string){const user=await currentUserRow();const now=new Date();const{data,error}=await supabase.from('monthly_spending_limits').select('amount').eq('user_id',user.id).eq('year',now.getFullYear()).eq('month',now.getMonth()+1).eq('currency',currency).maybeSingle();if(error)throw error;return data?.amount==null?null:Number(data.amount);}
 export async function saveMonthlySpendingLimit(currency:string,amount:number){const user=await currentUserRow();const now=new Date();const{error}=await supabase.from('monthly_spending_limits').upsert({user_id:user.id,year:now.getFullYear(),month:now.getMonth()+1,currency,amount},{onConflict:'user_id,year,month,currency'});if(error)throw error;}
@@ -64,7 +91,7 @@ function monthWindow(now:Date){
 export async function loadOverview():Promise<Overview>{
   const user=await currentUserRow();
   const now=new Date(),w=monthWindow(now);
-  const{data:householdIds,error:hidError}=await supabase.rpc('my_household_user_ids');if(hidError)throw hidError;const ids=(householdIds||[]) as number[];
+  const ids=await householdUserIds();
   const [txRes,recRes,comRes]=await Promise.all([
     supabase.from('transactions').select('id,kind,amount,currency,category,description,occurred_at,source').in('user_id',ids).gte('occurred_at',w.start.toISOString()).lt('occurred_at',w.end.toISOString()).order('occurred_at'),
     supabase.from('recurring_expenses').select('id,description,amount,currency,category,day_of_month').in('user_id',ids).eq('active',true).order('day_of_month'),
@@ -109,7 +136,7 @@ export async function recordSavingsWin(amount:number,currency:string,note=''){co
 
 
 export async function listTransactions(kind?:'receita'|'gasto',limit=500):Promise<Tx[]>{
-  const{data:ids,error:ie}=await supabase.rpc('my_household_user_ids');if(ie)throw ie;let q=supabase.from('transactions').select('id,kind,amount,currency,category,description,occurred_at,source').in('user_id',ids||[]).order('occurred_at',{ascending:false}).limit(limit);
+  const ids=await householdUserIds();let q=supabase.from('transactions').select('id,kind,amount,currency,category,description,occurred_at,source').in('user_id',ids||[]).order('occurred_at',{ascending:false}).limit(limit);
   if(kind)q=q.eq('kind',kind);const {data,error}=await q;if(error)throw error;
   return (data||[]).map(x=>({...x,amount:Number(x.amount)})) as Tx[];
 }
@@ -124,8 +151,8 @@ export async function addCategory(name:string){const user=await currentUserRow()
   if(error)throw error;if(data!==true)throw new Error('Não foi possível salvar a alteração.');
 }
 export async function deleteTransaction(id:number){const user=await currentUserRow();const{data,error}=await supabase.from('transactions').delete().eq('id',id).eq('user_id',user.id).select('id').maybeSingle();if(error)throw error;if(!data)throw new Error('Somente quem registrou esta movimentação pode excluí-la. Você ainda pode editar os dados financeiros compartilhados da família.');}
-export async function listCommitments(){const{data:ids,error:ie}=await supabase.rpc('my_household_user_ids');if(ie)throw ie;const{data,error}=await supabase.from('commitments').select('id,title,starts_at,raw_text').in('user_id',ids||[]).gte('starts_at',new Date().toISOString()).order('starts_at').limit(100);if(error)throw error;return data||[];}
-export async function listRecurring(){const{data:ids,error:ie}=await supabase.rpc('my_household_user_ids');if(ie)throw ie;const{data,error}=await supabase.from('recurring_expenses').select('id,description,amount,currency,category,day_of_month,active').in('user_id',ids||[]).order('day_of_month');if(error)throw error;return (data||[]).map((r:any)=>({...r,amount:r.amount===null?null:Number(r.amount)}));}
+export async function listCommitments(){const ids=await householdUserIds();const{data,error}=await supabase.from('commitments').select('id,title,starts_at,raw_text').in('user_id',ids||[]).gte('starts_at',new Date().toISOString()).order('starts_at').limit(100);if(error)throw error;return data||[];}
+export async function listRecurring(){const ids=await householdUserIds();const{data,error}=await supabase.from('recurring_expenses').select('id,description,amount,currency,category,day_of_month,active').in('user_id',ids||[]).order('day_of_month');if(error)throw error;return (data||[]).map((r:any)=>({...r,amount:r.amount===null?null:Number(r.amount)}));}
 export async function setVariableRecurringAmount(id:number,value:number){const{data,error}=await supabase.rpc('set_variable_recurring_amount',{p_recurring_id:id,p_amount:value});if(error)throw error;return data;}
 export async function updateAccount(changes:Partial<Pick<AccountInfo,'first_name'|'default_currency'|'timezone'>>){const user=await currentUserRow();const{error}=await supabase.from('users').update(changes).eq('id',user.id);if(error)throw error;}
 
@@ -142,7 +169,7 @@ export async function adminAction(body:any){const{data,error}=await supabase.fun
 
 export type CreditCard={id:number;user_id:number;name:string;currency:string;credit_limit:number;closing_day:number;due_day:number;active:boolean;recurring_expense_id:number|null;owner_name?:string;current_due_date:string;current_total:number;registered_usage:number;override_amount:number|null;purchases:Array<{id:number;amount:number;currency:string;category:string;description:string;purchased_at:string;statement_due_date:string;source:string}>};
 export async function listCreditCards():Promise<CreditCard[]>{
-  const{data:ids,error:ie}=await supabase.rpc('my_household_user_ids');if(ie)throw ie;const userIds=(ids||[]) as number[];
+  const userIds=await householdUserIds();
   const{data:cards,error}=await supabase.from('credit_cards').select('id,user_id,name,currency,credit_limit,closing_day,due_day,active,recurring_expense_id').in('user_id',userIds).eq('active',true).order('created_at');if(error)throw error;
   if(!cards?.length)return[];const cardIds=cards.map((c:any)=>c.id);const today=new Date().toISOString().slice(0,10);
   const[pur,ov,members]=await Promise.all([
