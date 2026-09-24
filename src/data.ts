@@ -89,7 +89,8 @@ export async function loadOverview():Promise<Overview>{
     series[cur]=Array.from({length:w.days},(_,i)=>{const day=i+1,v=daily[cur]?.[day]||{receita:0,gasto:0};receitaAcumulada+=v.receita;gastoAcumulado+=v.gasto;return{day,receita:v.receita,gasto:v.gasto,saldo:receitaAcumulada-gastoAcumulado};});
   }
   const consolidated:Overview['summary']={};
-  for(const target of ['JPY','BRL','USD','EUR']){let receita=0,gasto=0,complete=true;for(const tx of txs){let converted=Number(tx.amount);if(tx.currency!==target){const{data,error}=await supabase.rpc('fx_convert',{p_amount:Number(tx.amount),p_from:tx.currency,p_to:target,p_date:new Date(tx.occurred_at).toISOString().slice(0,10)});if(error||data==null){complete=false;break}converted=Number(data)}if(tx.kind==='receita')receita+=converted;else gasto+=converted}if(complete)consolidated[target]={receita,gasto,saldo:receita-gasto};}
+  const targets=Array.from(new Set([user.default_currency,...Object.keys(summary),'JPY','BRL','USD','EUR'].filter(Boolean)));
+  for(const target of targets){let receita=0,gasto=0,complete=true;for(const tx of txs){let converted=Number(tx.amount);if(tx.currency!==target){const{data,error}=await supabase.rpc('fx_convert',{p_amount:Number(tx.amount),p_from:tx.currency,p_to:target,p_date:new Date(tx.occurred_at).toISOString().slice(0,10)});if(error||data==null){complete=false;break}converted=Number(data)}if(tx.kind==='receita')receita+=converted;else gasto+=converted}if(complete)consolidated[target]={receita,gasto,saldo:receita-gasto};}
   return {year:w.year,month:w.month,default_currency:user.default_currency,summary,consolidated,series,categories,
     upcoming_recurring:(recRes.data||[]).map((r:any)=>{const o=(occRes.data||[]).find((x:any)=>x.recurring_expense_id===r.id);return {...r,amount:r.amount===null?null:Number(r.amount),confirmed_amount:o?.amount==null?null:Number(o.amount)};}),
     commitments:(comRes.data||[]) as Overview['commitments']};
