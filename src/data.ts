@@ -26,6 +26,12 @@ export async function loadAccount(){return currentUserRow();}
 export async function loadMonthlySpendingLimit(currency:string){const user=await currentUserRow();const now=new Date();const{data,error}=await supabase.from('monthly_spending_limits').select('amount').eq('user_id',user.id).eq('year',now.getFullYear()).eq('month',now.getMonth()+1).eq('currency',currency).maybeSingle();if(error)throw error;return data?.amount==null?null:Number(data.amount);}
 export async function saveMonthlySpendingLimit(currency:string,amount:number){const user=await currentUserRow();const now=new Date();const{error}=await supabase.from('monthly_spending_limits').upsert({user_id:user.id,year:now.getFullYear(),month:now.getMonth()+1,currency,amount},{onConflict:'user_id,year,month,currency'});if(error)throw error;}
 export async function listHouseholdMembers(){const{data,error}=await supabase.rpc('my_household_members');if(error)throw error;return data||[];}
+export async function listHouseholdChatMembers(){const{data,error}=await supabase.rpc('my_household_chat_members');if(error)throw error;return data||[];}
+export async function connectHouseholdWhatsApp(userId:number,phone:string){
+  const{data,error}=await supabase.functions.invoke('chat-connect',{body:{action:'whatsapp_family',user_id:userId,phone_e164:phone}});
+  if(error){let code='';try{code=(await error.context?.json())?.error||''}catch{}const messages:Record<string,string>={invalid_phone:'Informe o número com código do país e DDD.',owner_required:'Somente o titular pode gerar este link.',household_member_required:'Este membro não faz parte da sua família.',member_access_required:'O acesso deste membro está inativo.',whatsapp_phone_mismatch:'Este membro já possui outro número cadastrado.',whatsapp_already_linked:'Este número já está vinculado a outra pessoa.'};throw new Error(messages[code]||'Não consegui gerar a conexão. Tente novamente.');}
+  if(!data?.url)throw new Error('Não consegui gerar o link do WhatsApp.');return data;
+}
 export async function createHouseholdInvite(name:string,email:string){const{data,error}=await supabase.rpc('create_household_invite',{p_name:name.trim(),p_email:email.trim().toLowerCase()});if(error)throw error;return data as {token:string;expires_in_days:number};}
 export function accountHasAccess(account:AccountInfo|null){
   if(!account)return false;
