@@ -1,6 +1,6 @@
-const CACHE_VERSION='planeja-plus-shell-v1';
+const CACHE_VERSION='planeja-plus-shell-v2';
 const STATIC_CACHE=CACHE_VERSION;
-const APP_SHELL=['/','/manifest.webmanifest','/pwa-icon.svg','/brand/planeja-logo.png','/favicon.png'];
+const APP_SHELL=['/','/manifest.json','/pwa-icon.svg','/brand/planeja-logo.png','/favicon.png'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(
@@ -21,7 +21,7 @@ function isStaticAsset(url){
     url.pathname.startsWith('/brand/')||
     url.pathname==='/favicon.png'||
     url.pathname==='/pwa-icon.svg'||
-    url.pathname==='/manifest.webmanifest'
+    url.pathname==='/manifest.json'
   );
 }
 
