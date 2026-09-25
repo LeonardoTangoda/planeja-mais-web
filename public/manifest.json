@@ -8,11 +8,18 @@
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "any",
   "background_color": "#f6f8f4",
   "theme_color": "#225c3b",
-  "categories": ["finance", "productivity", "lifestyle"],
+  "categories": [
+    "finance",
+    "productivity",
+    "lifestyle"
+  ],
   "icons": [
     {
       "src": "/pwa-icon.svg",
@@ -32,19 +39,49 @@
       "name": "Dashboard",
       "short_name": "Dashboard",
       "url": "/?page=dashboard&source=pwa-shortcut",
-      "icons": [{"src": "/pwa-icon.svg", "sizes": "any", "type": "image/svg+xml"}]
+      "icons": [
+        {
+          "src": "/pwa-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Lista de mercado",
+      "short_name": "Mercado",
+      "url": "/?page=mercado&source=pwa-shortcut",
+      "icons": [
+        {
+          "src": "/pwa-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
     },
     {
       "name": "Cartões",
       "short_name": "Cartões",
       "url": "/?page=cartoes&source=pwa-shortcut",
-      "icons": [{"src": "/pwa-icon.svg", "sizes": "any", "type": "image/svg+xml"}]
+      "icons": [
+        {
+          "src": "/pwa-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
     },
     {
       "name": "Compromissos",
       "short_name": "Agenda",
       "url": "/?page=compromissos&source=pwa-shortcut",
-      "icons": [{"src": "/pwa-icon.svg", "sizes": "any", "type": "image/svg+xml"}]
+      "icons": [
+        {
+          "src": "/pwa-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
     }
   ]
 }
