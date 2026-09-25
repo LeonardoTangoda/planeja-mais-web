@@ -1,0 +1,50 @@
+{
+  "id": "/",
+  "name": "Planeja+ — Sua vida financeira organizada",
+  "short_name": "Planeja+",
+  "description": "Assistente financeiro familiar com Folhinha, dashboard, agenda, cartões, metas e relatórios.",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#f6f8f4",
+  "theme_color": "#225c3b",
+  "categories": ["finance", "productivity", "lifestyle"],
+  "icons": [
+    {
+      "src": "/pwa-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/brand/planeja-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "url": "/?page=dashboard&source=pwa-shortcut",
+      "icons": [{"src": "/pwa-icon.svg", "sizes": "any", "type": "image/svg+xml"}]
+    },
+    {
+      "name": "Cartões",
+      "short_name": "Cartões",
+      "url": "/?page=cartoes&source=pwa-shortcut",
+      "icons": [{"src": "/pwa-icon.svg", "sizes": "any", "type": "image/svg+xml"}]
+    },
+    {
+      "name": "Compromissos",
+      "short_name": "Agenda",
+      "url": "/?page=compromissos&source=pwa-shortcut",
+      "icons": [{"src": "/pwa-icon.svg", "sizes": "any", "type": "image/svg+xml"}]
+    }
+  ]
+}
