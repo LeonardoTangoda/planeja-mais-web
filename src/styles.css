@@ -320,3 +320,51 @@ body{background:radial-gradient(circle at 12% 0%,rgba(91,174,116,.08),transparen
     white-space:normal;
   }
 }
+
+
+/* Mobile top navigation v3: fit all primary items on-screen with no horizontal scrolling. */
+@media(max-width:720px){
+  .main-topnav nav{
+    display:grid!important;
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    width:100%!important;
+    min-width:0!important;
+    gap:2px!important;
+    padding:3px!important;
+    overflow:visible!important;
+    justify-content:stretch!important;
+  }
+  .main-topnav nav>button,
+  .launch-wrap,
+  .launch-wrap>button{
+    min-width:0!important;
+    width:100%!important;
+    max-width:100%!important;
+  }
+  .main-topnav nav>button,
+  .launch-wrap>button{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    min-height:38px!important;
+    padding:6px 2px!important;
+    font-size:clamp(.56rem,2.55vw,.68rem)!important;
+    line-height:1.05!important;
+    white-space:normal!important;
+    text-align:center!important;
+    overflow-wrap:anywhere;
+  }
+  .launch-wrap{display:flex!important;align-items:stretch!important}
+  .launch-wrap>button small{font-size:.55rem!important;margin-left:1px!important}
+}
+@media(max-width:360px){
+  .main-topnav{padding-left:7px!important;padding-right:7px!important}
+  .main-topnav nav{gap:1px!important;padding:2px!important}
+  .main-topnav nav>button,
+  .launch-wrap>button{
+    padding-left:1px!important;
+    padding-right:1px!important;
+    font-size:.55rem!important;
+  }
+  .garden-nav-leaf{display:none!important}
+}
