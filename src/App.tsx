@@ -79,7 +79,7 @@ function familyTransactionsCsv(bundle:any){
   return '\uFEFF'+rows.map(r=>r.map(csvCell).join(';')).join('\r\n');
 }
 
-function signupPhone(value:string,required=true){const raw=value.trim();if(!raw){if(required)throw new Error('Informe seu WhatsApp com código do país, por exemplo +81 90 1234 5678.');return ''}if(!raw.startsWith('+'))throw new Error('Inclua o código do país começando com +. Ex.: +81 90 1234 5678 ou +55 11 99999-9999.');const digits=raw.replace(/\D/g,'');if(!/^[1-9][0-9]{7,14}$/.test(digits))throw new Error('Esse número não está no formato internacional. Use +, código do país e número completo.');return `+${digits}`}
+function signupPhone(value:string,required=true){const raw=value.trim();if(!raw){if(required)throw new Error('Informe seu WhatsApp com código do país, por exemplo +81 90 1234 5678.');return ''}if(!raw.startsWith('+'))throw new Error('Inclua o código do país começando com +. Ex.: +81 90 1234 5678 ou +55 11 99999-9999.');const digits=raw.replace(/\D/g,'');if(!/^[1-9][0-9]{7,14}$/.test(digits))throw new Error('Esse número não está no formato internacional. Use +, código do país e número completo.');if(/^(810|550)/.test(digits))throw new Error('No formato internacional, remova o 0 usado apenas na discagem local. Ex.: 090… no Japão vira +81 90….');return `+${digits}`}
 function Auth(){
   const[{betaInvite,familyInvite}]=useState(()=>{try{return{betaInvite:(localStorage.getItem('planeja_beta_invite')||'').trim(),familyInvite:(localStorage.getItem('planeja_family_invite')||'').trim()}}catch{return{betaInvite:'',familyInvite:''}}});
   const invite=familyInvite||betaInvite;const familySignup=Boolean(familyInvite);
@@ -99,14 +99,15 @@ function Auth(){
   async function submit(e:FormEvent){
     e.preventDefault();setBusy(true);setMsg('');
     try{
-      if(mode==='forgot'){if(turnstileEnabled&&!captchaToken)throw new Error('Aguarde um instante enquanto protegemos seu acesso.');const{error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:AUTH_REDIRECT_ORIGIN,captchaToken:captchaToken||undefined});setMsg(error?error.message:'Se esse e-mail estiver cadastrado, você receberá um link para criar uma nova senha. 🍃');return;}
-      if(mode==='login'){if(turnstileEnabled&&!captchaToken)throw new Error('Aguarde um instante enquanto protegemos seu acesso.');const result=await supabase.auth.signInWithPassword({email,password,options:captchaToken?{captchaToken}:undefined});if(result.error)throw result.error;return;}
+      const cleanEmail=email.trim().toLowerCase();
+      if(mode==='forgot'){if(turnstileEnabled&&!captchaToken)throw new Error('Aguarde um instante enquanto protegemos seu acesso.');const{error}=await supabase.auth.resetPasswordForEmail(cleanEmail,{redirectTo:AUTH_REDIRECT_ORIGIN,captchaToken:captchaToken||undefined});setMsg(error?error.message:'Se esse e-mail estiver cadastrado, você receberá um link para criar uma nova senha. 🍃');return;}
+      if(mode==='login'){if(turnstileEnabled&&!captchaToken)throw new Error('Aguarde um instante enquanto protegemos seu acesso.');const result=await supabase.auth.signInWithPassword({email:cleanEmail,password,options:captchaToken?{captchaToken}:undefined});if(result.error)throw result.error;return;}
       if(!invite)throw new Error('O beta está fechado. O cadastro só é liberado por um link de convite.');
       if(!firstName.trim())throw new Error('Informe seu nome.');if(preferredChat==='whatsapp'&&!consent)throw new Error('Confirme que você quer receber a primeira mensagem da Folhinha no seu WhatsApp.');
-      await assertSafeNewPassword(password);if(turnstileEnabled&&!captchaToken)throw new Error('Aguarde um instante enquanto protegemos seu acesso.');const cleanPhone=signupPhone(phone,preferredChat==='whatsapp');const valid=familySignup?await validateHouseholdInvite(familyInvite,email):await validateBetaInvite(betaInvite,email);if(!valid)throw new Error(familySignup?'Este convite familiar é inválido, expirou ou foi emitido para outro e-mail.':'Este convite é inválido, expirou ou foi emitido para outro e-mail.');if(cleanPhone&&!await validateRegistrationPhone(cleanPhone,email,betaInvite,familyInvite))throw new Error('Este WhatsApp já está vinculado a outra conta do Planeja+. Entre nessa conta ou use outro número.');
+      await assertSafeNewPassword(password);if(turnstileEnabled&&!captchaToken)throw new Error('Aguarde um instante enquanto protegemos seu acesso.');const cleanPhone=signupPhone(phone,preferredChat==='whatsapp');const valid=familySignup?await validateHouseholdInvite(familyInvite,cleanEmail):await validateBetaInvite(betaInvite,cleanEmail);if(!valid)throw new Error(familySignup?'Este convite familiar é inválido, expirou ou foi emitido para outro e-mail.':'Este convite é inválido, expirou ou foi emitido para outro e-mail.');if(cleanPhone&&!await validateRegistrationPhone(cleanPhone,cleanEmail,betaInvite,familyInvite))throw new Error('Este WhatsApp já está vinculado a outra conta do Planeja+. Entre nessa conta ou use outro número.');
       const redirect=familySignup?`${AUTH_REDIRECT_ORIGIN}/?family=${encodeURIComponent(familyInvite)}`:`${AUTH_REDIRECT_ORIGIN}/?invite=${encodeURIComponent(betaInvite)}`;
       const inviteMetadata=familySignup?{household_invite_token:familyInvite}:{beta_invite_token:betaInvite};
-      const result=await supabase.auth.signUp({email,password,options:{emailRedirectTo:redirect,captchaToken:captchaToken||undefined,data:{first_name:firstName.trim(),phone_e164:cleanPhone,preferred_chat:preferredChat,chat_consent:String(consent),...inviteMetadata}}});
+      const result=await supabase.auth.signUp({email:cleanEmail,password,options:{emailRedirectTo:redirect,captchaToken:captchaToken||undefined,data:{first_name:firstName.trim(),phone_e164:cleanPhone,preferred_chat:preferredChat,chat_consent:String(consent),...inviteMetadata}}});
       if(result.error)throw result.error;
       if(result.data.user&&Array.isArray(result.data.user.identities)&&result.data.user.identities.length===0){setConfirmationPending(false);setMode('login');setMsg('Esse e-mail já possui uma conta. Entre com sua senha para continuar usando este convite. 🍃');return;}
       if(result.data.session){
@@ -414,14 +415,13 @@ function ClosedBetaAccess({account}:{account:AccountInfo}){
 }
 
 function AuthenticatedApp(){
-  const[account,setAccount]=useState<AccountInfo|null>(null);const[loading,setLoading]=useState(true);const[error,setError]=useState('');
-  async function load(){setLoading(true);try{let a=await loadAccount();const familyInvite=localStorage.getItem('planeja_family_invite');if(familyInvite){await redeemHouseholdInvite(familyInvite);localStorage.removeItem('planeja_family_invite');a=await loadAccount()}const invite=localStorage.getItem('planeja_beta_invite');if(invite){if(!accountHasAccess(a)){await redeemBetaInvite(invite);a=await loadAccount()}localStorage.removeItem('planeja_beta_invite')}setAccount(a);setError('')}catch(e){setError(e instanceof Error?e.message:'Não consegui carregar sua conta.')}finally{setLoading(false)}}
+  const[account,setAccount]=useState<AccountInfo|null>(null);const[loading,setLoading]=useState(true);const[error,setError]=useState('');const[inviteNotice,setInviteNotice]=useState('');
+  async function load(){setLoading(true);try{let a=await loadAccount();const familyInvite=localStorage.getItem('planeja_family_invite');if(familyInvite){try{await redeemHouseholdInvite(familyInvite);localStorage.removeItem('planeja_family_invite');a=await loadAccount();setInviteNotice('✅ Convite familiar aceito. Você já está na conta da família. 🍃')}catch(e){const code=String((e as any)?.inviteCode||'');if(code){localStorage.removeItem('planeja_family_invite');setInviteNotice(e instanceof Error?e.message:'Não foi possível usar o convite familiar.')}else throw e}}const invite=localStorage.getItem('planeja_beta_invite');if(invite){if(!accountHasAccess(a)){await redeemBetaInvite(invite);a=await loadAccount()}localStorage.removeItem('planeja_beta_invite')}setAccount(a);setError('')}catch(e){setError(e instanceof Error?e.message:'Não consegui carregar sua conta.')}finally{setLoading(false)}}
   useEffect(()=>{load()},[]);
   if(loading)return <div className="center">Preparando sua conta… 🍃</div>;
   if(error||!account)return <div className="center">{error||'Conta indisponível.'}</div>;
-  if(!accountHasAccess(account))return <ClosedBetaAccess account={account}/>;
-  if(!account.registration_flow_completed)return <ActivationFlow account={account} onReload={load}/>;
-  return <Dashboard/>;
+  const content=!accountHasAccess(account)?<ClosedBetaAccess account={account}/>:!account.registration_flow_completed?<ActivationFlow account={account} onReload={load}/>:<Dashboard/>;
+  return <>{content}{inviteNotice&&<div className="toast" onClick={()=>setInviteNotice('')}>{inviteNotice}<button>×</button></div>}</>;
 }
 
 export default function App(){const[session,setSession]=useState<Session|null>(null);const[ready,setReady]=useState(false);const[recovery,setRecovery]=useState(false);useEffect(()=>{supabase.auth.getSession().then(({data})=>{setSession(data.session);setReady(true)});const{sub}={sub:supabase.auth.onAuthStateChange((event,s)=>{if(event==='PASSWORD_RECOVERY')setRecovery(true);setSession(s)}).data.subscription};return()=>sub.unsubscribe()},[]);if(!ready)return <div className="center">Carregando…</div>;if(recovery&&session)return <ResetPassword onDone={()=>setRecovery(false)}/>;return session?<AuthenticatedApp/>:<Auth/>}
