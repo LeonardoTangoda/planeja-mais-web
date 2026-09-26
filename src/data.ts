@@ -56,7 +56,7 @@ async function householdUserIds():Promise<number[]>{
 export async function loadAccount(){return currentUserRow();}
 export async function loadMonthlySpendingLimit(currency:string){const user=await currentUserRow();const now=new Date();const{data,error}=await supabase.from('monthly_spending_limits').select('amount').eq('user_id',user.id).eq('year',now.getFullYear()).eq('month',now.getMonth()+1).eq('currency',currency).maybeSingle();if(error)throw error;return data?.amount==null?null:Number(data.amount);}
 export async function saveMonthlySpendingLimit(currency:string,amount:number){const user=await currentUserRow();const now=new Date();const{error}=await supabase.from('monthly_spending_limits').upsert({user_id:user.id,year:now.getFullYear(),month:now.getMonth()+1,currency,amount},{onConflict:'user_id,year,month,currency'});if(error)throw error;}
-export async function listHouseholdMembers(){const{data,error}=await supabase.rpc('my_household_members');if(error)throw error;return data||[];}
+async function listHouseholdMembers(){const{data,error}=await supabase.rpc('my_household_members');if(error)throw error;return data||[];}
 export async function listHouseholdChatMembers(){const{data,error}=await supabase.rpc('my_household_chat_members');if(error)throw error;return data||[];}
 export async function connectHouseholdWhatsApp(userId:number,phone:string){
   const{data,error}=await supabase.functions.invoke('chat-connect',{body:{action:'whatsapp_family',user_id:userId,phone_e164:phone}});
@@ -155,7 +155,6 @@ export async function addCategory(name:string){const user=await currentUserRow()
 export async function deleteTransaction(id:number){const user=await currentUserRow();const{data,error}=await supabase.from('transactions').delete().eq('id',id).eq('user_id',user.id).select('id').maybeSingle();if(error)throw error;if(!data)throw new Error('Somente quem registrou esta movimentação pode excluí-la. Você ainda pode editar os dados financeiros compartilhados da família.');}
 export async function listCommitments(){const ids=await householdUserIds();const{data,error}=await supabase.from('commitments').select('id,title,starts_at,raw_text').in('user_id',ids||[]).gte('starts_at',new Date().toISOString()).order('starts_at').limit(100);if(error)throw error;return data||[];}
 export async function listRecurring(){const ids=await householdUserIds();const{data,error}=await supabase.from('recurring_expenses').select('id,description,amount,currency,category,day_of_month,active').in('user_id',ids||[]).order('day_of_month');if(error)throw error;return (data||[]).map((r:any)=>({...r,amount:r.amount===null?null:Number(r.amount)}));}
-export async function setVariableRecurringAmount(id:number,value:number){const{data,error}=await supabase.rpc('set_variable_recurring_amount',{p_recurring_id:id,p_amount:value});if(error)throw error;return data;}
 export async function updateAccount(changes:Partial<Pick<AccountInfo,'first_name'|'default_currency'|'timezone'>>){const user=await currentUserRow();const{error}=await supabase.from('users').update(changes).eq('id',user.id);if(error)throw error;}
 
 export async function submitFeedback(type:string,message:string,feature='dashboard'){const{data,error}=await supabase.rpc('submit_feedback',{p_type:type,p_message:message,p_feature:feature,p_context:{surface:'dashboard'}});if(error)throw error;return data;}
@@ -164,7 +163,6 @@ export async function listMyFeedback(){const{data,error}=await supabase.rpc('my_
 export async function isAdmin(){const{data,error}=await supabase.rpc('is_planeja_admin');if(error)throw error;return !!data;}
 export async function adminBetaOverview(){const{data,error}=await supabase.rpc('admin_beta_overview');if(error)throw error;return data;}
 export async function adminFeedbackList(){const{data,error}=await supabase.rpc('admin_feedback_list');if(error)throw error;return data||[];}
-export async function adminBetaUsers(){const{data,error}=await supabase.rpc('admin_beta_users');if(error)throw error;return data||[];}
 export async function adminPulseSummary(){const{data,error}=await supabase.rpc('admin_pulse_summary');if(error)throw error;return data||[];}
 export async function adminSaasOverview(days=30){const{data,error}=await supabase.rpc('admin_saas_overview',{p_days:days});if(error)throw error;return data||{};}
 export async function adminAction(body:any){const{data,error}=await supabase.functions.invoke('beta-admin-actions-v1',{body});if(error)throw error;return data;}
