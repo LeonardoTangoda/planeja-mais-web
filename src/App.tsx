@@ -10,6 +10,7 @@ type Page='home'|'receitas'|'despesas'|'cartoes'|'categorias'|'compromissos'|'me
 const ISO_CURRENCY_CODES:string[]=(()=>{try{return [...(((Intl as any).supportedValuesOf?.('currency'))||[])].sort()}catch{return ['BRL','EUR','JPY','USD']}})();
 const IANA_TIME_ZONES:string[]=(()=>{try{return [...(((Intl as any).supportedValuesOf?.('timeZone'))||[])].sort()}catch{return ['America/Sao_Paulo','Asia/Tokyo','UTC']}})();
 const PIE_COLORS=['#225c3b','#4f8a62','#7eaa89','#b1cdb7','#d5e4d7','#6b806f','#a5b5a8'];
+const AUTH_REDIRECT_ORIGIN='https://planeja-mais.onrender.com';
 function money(value:number,currency:string){return new Intl.NumberFormat('pt-BR',{style:'currency',currency,maximumFractionDigits:currency==='JPY'?0:2}).format(value)}
 function localDate(v:string){return new Date(v).toLocaleDateString('pt-BR')}
 function localDateTime(v:string){return new Date(v).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})}
@@ -70,12 +71,12 @@ function Auth(){
   async function submit(e:FormEvent){
     e.preventDefault();setBusy(true);setMsg('');
     try{
-      if(mode==='forgot'){if(turnstileEnabled&&!captchaToken)throw new Error('Aguarde um instante enquanto protegemos seu acesso.');const{error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin,captchaToken:captchaToken||undefined});setMsg(error?error.message:'Se esse e-mail estiver cadastrado, você receberá um link para criar uma nova senha. 🍃');return;}
+      if(mode==='forgot'){if(turnstileEnabled&&!captchaToken)throw new Error('Aguarde um instante enquanto protegemos seu acesso.');const{error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:AUTH_REDIRECT_ORIGIN,captchaToken:captchaToken||undefined});setMsg(error?error.message:'Se esse e-mail estiver cadastrado, você receberá um link para criar uma nova senha. 🍃');return;}
       if(mode==='login'){if(turnstileEnabled&&!captchaToken)throw new Error('Aguarde um instante enquanto protegemos seu acesso.');const result=await supabase.auth.signInWithPassword({email,password,options:captchaToken?{captchaToken}:undefined});if(result.error)throw result.error;return;}
       if(!invite)throw new Error('O beta está fechado. O cadastro só é liberado por um link de convite.');
       if(!firstName.trim())throw new Error('Informe seu nome.');if(preferredChat==='whatsapp'&&!consent)throw new Error('Confirme que você quer receber a primeira mensagem da Folhinha no seu WhatsApp.');
       await assertSafeNewPassword(password);if(turnstileEnabled&&!captchaToken)throw new Error('Aguarde um instante enquanto protegemos seu acesso.');const cleanPhone=signupPhone(phone);const valid=await validateBetaInvite(invite,email);if(!valid)throw new Error('Este convite é inválido, expirou ou foi emitido para outro e-mail.');
-      const redirect=`${window.location.origin}/?invite=${encodeURIComponent(invite)}`;
+      const redirect=`${AUTH_REDIRECT_ORIGIN}/?invite=${encodeURIComponent(invite)}`;
       const result=await supabase.auth.signUp({email,password,options:{emailRedirectTo:redirect,captchaToken:captchaToken||undefined,data:{first_name:firstName.trim(),phone_e164:cleanPhone,preferred_chat:preferredChat,chat_consent:String(consent),beta_invite_token:invite}}});
       if(result.error)throw result.error;
       if(result.data.session){
