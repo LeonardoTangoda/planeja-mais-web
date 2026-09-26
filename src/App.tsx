@@ -132,7 +132,30 @@ const SideIcon=({name}:{name:string})=>{const common={width:19,height:19,viewBox
 function Sidebar({page,setPage,open,setOpen,account}:{page:Page,setPage:(p:Page)=>void,open:boolean,setOpen:(v:boolean)=>void,account:AccountInfo|null}){
   return <><div className={`drawer-scrim ${open?'show':''}`} onClick={()=>setOpen(false)}/><aside className={`sidebar utility-sidebar ${open?'open':''}`}><div className="side-brand"><img className="side-logo" src="/brand/planeja-logo.png" alt=""/><div><b>Planeja+</b><small>Menu da conta</small></div><button className="side-close" onClick={()=>setOpen(false)}>×</button></div><nav aria-label="Conta e suporte">{SIDE_NAV.map(n=><button key={n.id} className={page===n.id?'active':''} onClick={()=>{setPage(n.id);setOpen(false)}}><span><SideIcon name={n.icon}/></span>{n.label}</button>)}</nav><div className="side-plan"><small>SEU PLANO</small><b>{account?.subscription_plan||'beta'}</b><span>{accountHasAccess(account)?'Acesso liberado':'Acesso suspenso'}</span></div><button className="side-logout" onClick={()=>supabase.auth.signOut()}>Sair da conta</button></aside></>
 }
-function MainTopNav({page,setPage,onMenu}:{page:Page,setPage:(p:Page)=>void,onMenu:()=>void}){const[launchOpen,setLaunchOpen]=useState(false);return <div className="main-topnav"><button className="utility-menu-btn" onClick={onMenu} aria-label="Abrir menu">☰</button><button className="top-logo" onClick={()=>setPage('home')} aria-label="Ir para o início"><img src="/brand/folhinha.png" alt=""/><span className="top-logo-copy"><strong>Planeja+</strong><small>Plante hoje, colha amanhã</small></span></button><nav><button className={page==='home'?'active':''} onClick={()=>setPage('home')}>Home</button><div className="launch-wrap"><button className={page==='receitas'||page==='despesas'||page==='cartoes'?'active':''} onClick={()=>setLaunchOpen(v=>!v)}>Lançamentos <small>⌄</small></button>{launchOpen&&<div className="launch-menu"><button onClick={()=>{setPage('receitas');setLaunchOpen(false)}}>Receitas</button><button onClick={()=>{setPage('despesas');setLaunchOpen(false)}}>Despesas</button><button onClick={()=>{setPage('cartoes');setLaunchOpen(false)}}>Cartões de crédito</button></div>}</div><button className={page==='compromissos'?'active':''} onClick={()=>setPage('compromissos')}>Agenda</button><button className={page==='mercado'?'active':''} onClick={()=>setPage('mercado')}>Mercado 🛒</button><button className={page==='jardim'?'active':''} onClick={()=>setPage('jardim')}>Jardim <span className="garden-nav-leaf">🌱</span></button></nav></div>}
+function MainTopNav({page,setPage,onMenu}:{page:Page,setPage:(p:Page)=>void,onMenu:()=>void}){
+  const[launchOpen,setLaunchOpen]=useState(false);
+  const go=(next:Page)=>{setPage(next);setLaunchOpen(false)};
+  const launchItems=<>
+    <button onClick={()=>go('receitas')}>Receitas</button>
+    <button onClick={()=>go('despesas')}>Despesas</button>
+    <button onClick={()=>go('cartoes')}>Cartões de crédito</button>
+  </>;
+  return <div className={`main-topnav ${launchOpen?'launch-open':''}`}>
+    <button className="utility-menu-btn" onClick={()=>{setLaunchOpen(false);onMenu()}} aria-label="Abrir menu">☰</button>
+    <button className="top-logo" onClick={()=>go('home')} aria-label="Ir para o início"><img src="/brand/folhinha.png" alt=""/><span className="top-logo-copy"><strong>Planeja+</strong><small>Plante hoje, colha amanhã</small></span></button>
+    <nav aria-label="Navegação principal">
+      <button className={page==='home'?'active':''} onClick={()=>go('home')}>Home</button>
+      <div className="launch-wrap">
+        <button className={page==='receitas'||page==='despesas'||page==='cartoes'?'active':''} onClick={()=>setLaunchOpen(v=>!v)} aria-expanded={launchOpen} aria-controls="launch-menu-mobile">Lançamentos <small>{launchOpen?'⌃':'⌄'}</small></button>
+        {launchOpen&&<div className="launch-menu launch-menu-desktop">{launchItems}</div>}
+      </div>
+      <button className={page==='compromissos'?'active':''} onClick={()=>go('compromissos')}>Agenda</button>
+      <button className={page==='mercado'?'active':''} onClick={()=>go('mercado')}>Mercado 🛒</button>
+      <button className={page==='jardim'?'active':''} onClick={()=>go('jardim')}>Jardim <span className="garden-nav-leaf">🌱</span></button>
+    </nav>
+    {launchOpen&&<div id="launch-menu-mobile" className="launch-menu launch-menu-mobile" role="menu" aria-label="Lançamentos">{launchItems}</div>}
+  </div>
+}
 
 
 function TransactionsPage({kind,txs,currency,onEdit}:{kind:'receita'|'gasto',txs:Tx[],currency:string,onEdit:(t:Tx)=>void}){
