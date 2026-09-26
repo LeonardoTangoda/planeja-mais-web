@@ -35,7 +35,11 @@ async function householdUserIds():Promise<number[]>{
     for(let attempt=0;attempt<3;attempt++){
       const{data,error}=await supabase.rpc('my_household_user_ids');
       if(!error){
-        const ids=(data||[]) as number[];
+        let ids=(data||[]) as number[];
+        if(!ids.length){
+          const me=await currentUserRow();
+          ids=[me.id];
+        }
         householdIdsCache={ids,expiresAt:Date.now()+10_000};
         return ids;
       }
