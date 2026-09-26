@@ -62,12 +62,11 @@ function familyTransactionsCsv(bundle:any){
 
 function signupPhone(value:string){const digits=value.replace(/\D/g,'');if(digits.length<8||digits.length>15)throw new Error('Informe o telefone com código do país, por exemplo +81 90 1234 5678.');return `+${digits}`}
 function Auth(){
-  const params=new URLSearchParams(window.location.search);const inviteFromUrl=(params.get('invite')||'').trim();
-  const storedInvite=localStorage.getItem('planeja_beta_invite')||'';const invite=inviteFromUrl||storedInvite;
+  const[invite]=useState(()=>{const params=new URLSearchParams(window.location.search);const fromUrl=(params.get('invite')||'').trim();if(fromUrl)return fromUrl;try{return(localStorage.getItem('planeja_beta_invite')||'').trim()}catch{return''}});
   const[email,setEmail]=useState('');const[password,setPassword]=useState('');const[firstName,setFirstName]=useState('');const[phone,setPhone]=useState('');
   const[preferredChat,setPreferredChat]=useState<'whatsapp'|'telegram'>('whatsapp');const[consent,setConsent]=useState(false);
   const[mode,setMode]=useState<'login'|'signup'|'forgot'>(invite?'signup':'login');const[msg,setMsg]=useState('');const[busy,setBusy]=useState(false);const[captchaToken,setCaptchaToken]=useState<string|null>(null);const[captchaEpoch,setCaptchaEpoch]=useState(0);
-  useEffect(()=>{if(inviteFromUrl){localStorage.setItem('planeja_beta_invite',inviteFromUrl);const url=new URL(window.location.href);url.searchParams.delete('invite');window.history.replaceState({},'',url.pathname+(url.searchParams.size?'?'+url.searchParams.toString():'')+url.hash)}},[inviteFromUrl]);
+  useEffect(()=>{if(!invite)return;try{localStorage.setItem('planeja_beta_invite',invite)}catch{}const url=new URL(window.location.href);if(url.searchParams.has('invite')){url.searchParams.delete('invite');window.history.replaceState({},'',url.pathname+(url.searchParams.size?'?'+url.searchParams.toString():'')+url.hash)}},[invite]);
   async function submit(e:FormEvent){
     e.preventDefault();setBusy(true);setMsg('');
     try{
